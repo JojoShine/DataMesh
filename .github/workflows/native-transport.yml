@@ -1,0 +1,72 @@
+name: Prepare verified native transport
+on:
+  push:
+    branches: [codex/native-image-transport]
+    paths: [.github/workflows/native-transport.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: datamesh-native-transport-v0.1.0
+  cancel-in-progress: false
+jobs:
+  flink:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Copy the exact verified release image without rebuilding
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh release download v0.1.0 --repo "$GITHUB_REPOSITORY" --pattern release-manifest.json --dir artifacts/transport
+          python3 - <<'PY'
+          import hashlib,json,os,subprocess,sys
+          from pathlib import Path
+          sys.path.insert(0,'scripts')
+          from ci_production import existing_tag
+          directory=Path('artifacts/transport')
+          raw=(directory/'release-manifest.json').read_bytes()
+          if hashlib.sha256(raw).hexdigest()!='0d1cd29911907cdc021ca20330bb3de38091ad1bea27763fdb8ccfbb8f5ea5bb':
+              raise RuntimeError('Immutable release manifest changed')
+          manifest=json.loads(raw)
+          if manifest['version']!='v0.1.0' or not manifest['verified']['native'] or manifest['architecture']!='amd64':
+              raise RuntimeError('Native release evidence missing')
+          source=manifest['images']['FLINK_IMAGE']
+          def run(args,**kwargs):
+              return subprocess.run(args,check=True,**kwargs).stdout
+          def inspect(reference):
+              value=json.loads(run(['docker','image','inspect',reference],capture_output=True,text=True))[0]
+              if value['Id']!=source['config_id'] or value['Architecture']!='amd64' or value['Os']!='linux':
+                  raise RuntimeError('Transport image differs from the accepted native release')
+              return value
+          owner=os.environ['GITHUB_REPOSITORY_OWNER'].lower()
+          tag='transport-flink-'+source['reference'].split('@')[1].replace(':','-')
+          target='ghcr.io/'+owner+'/datamesh:'+tag
+          run(['docker','login','ghcr.io','--username',os.environ['GITHUB_ACTOR'],'--password-stdin'],input=os.environ['GH_TOKEN'],text=True,capture_output=True)
+          prior=existing_tag(owner,'datamesh',tag)
+          if prior:
+              run(['docker','pull',target]);value=inspect(target)
+          else:
+              run(['docker','pull','--platform','linux/amd64',source['reference']])
+              inspect(source['reference'])
+              run(['docker','tag',source['reference'],target])
+              run(['docker','push',target]);value=inspect(target)
+          references=[x for x in value.get('RepoDigests',[]) if x.startswith('ghcr.io/'+owner+'/datamesh@')]
+          if len(references)!=1:raise RuntimeError('Immutable transport reference unavailable')
+          proof={'state':'verified','release':'v0.1.0','source_reference':source['reference'],'transport_reference':references[0],'config_id':source['config_id'],'architecture':'amd64','rebuilt':False}
+          (directory/'transport-proof.json').write_text(json.dumps(proof,indent=2)+'\n')
+          print(json.dumps(proof))
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: verified-flink-transport-v0.1.0
+          path: artifacts/transport/transport-proof.json
+          if-no-files-found: error
+          retention-days: 90
