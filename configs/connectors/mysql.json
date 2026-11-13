@@ -1,0 +1,22 @@
+{
+  "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+  "tasks.max": "1",
+  "database.hostname": "mysql-source",
+  "database.port": "3306",
+  "database.user": "datamesh_cdc",
+  "database.password": "${SOURCE_CDC_PASSWORD}",
+  "topic.prefix": "datamesh_mysql",
+  "table.include.list": "sample.customers",
+  "snapshot.mode": "initial",
+  "decimal.handling.mode": "string",
+  "tombstones.on.delete": "false",
+  "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "key.converter.schemas.enable": "false",
+  "value.converter.schemas.enable": "false",
+  "database.server.id": "4101",
+  "database.include.list": "sample",
+  "schema.history.internal.kafka.bootstrap.servers": "kafka:9092",
+  "schema.history.internal.kafka.topic": "datamesh.mysql.schema_history",
+  "include.schema.changes": "false"
+}

@@ -1,0 +1,5 @@
+@media(max-width:480px){
+ .governance-date-popup {position:fixed !important;left:16px !important;top:16px !important;right:auto !important;bottom:auto !important;max-width:calc(100vw - 32px);max-height:calc(100dvh - 32px);overflow:auto;}
+ .governance-date-popup .ant-picker-datetime-panel {flex-direction:column;}
+ .governance-date-popup .ant-picker-datetime-panel .ant-picker-time-panel {width:100%;border-inline-start:0;border-top:1px solid var(--border);}
+}

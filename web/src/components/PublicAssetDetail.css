@@ -1,0 +1,5 @@
+.public-asset-detail-content,
+.public-asset-detail-intro { display: flex; flex-direction: column; gap: 24px; }
+.public-asset-detail-intro > section h3 { margin: 0 0 12px; }
+.public-asset-detail-intro > section p,
+.public-asset-detail-content > .helper-text { margin: 0; }

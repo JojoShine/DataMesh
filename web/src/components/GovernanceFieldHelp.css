@@ -1,0 +1,3 @@
+.governance-field-help { display: inline-flex; align-items: center; margin-inline-start: 4px; color: var(--text-secondary, #60749A); cursor: help; vertical-align: middle; }
+.governance-field-help:focus-visible { outline: 2px solid var(--accent, #1677FF); outline-offset: 3px; border-radius: 2px; }
+.ant-form-item-tooltip .governance-field-help { margin-inline-start: 0; }

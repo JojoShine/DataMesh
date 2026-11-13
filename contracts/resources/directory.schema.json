@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:datamesh:directorydefinition:v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "classification": {
+      "enum": [
+        "base",
+        "theme",
+        "department"
+      ]
+    },
+    "classification_path": {
+      "type": "string"
+    },
+    "resource_code": {
+      "type": "string"
+    },
+    "dictionary_id": {
+      "type": "string"
+    },
+    "provider_name": {
+      "type": "string"
+    },
+    "provider_code": {
+      "type": "string"
+    },
+    "responsible_user_id": {
+      "type": "string"
+    },
+    "update_frequency": {
+      "type": "string"
+    },
+    "format": {
+      "enum": [
+        "database",
+        "api",
+        "file"
+      ]
+    },
+    "data_layer": {
+      "enum": [
+        "raw_object",
+        "governed_dataset"
+      ]
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/DirectoryItem"
+      }
+    },
+    "sharing_type": {
+      "enum": [
+        "unconditional",
+        "conditional",
+        "not_shared"
+      ]
+    },
+    "sharing_conditions": {
+      "type": "string"
+    },
+    "non_sharing_reason": {
+      "type": "string"
+    },
+    "legal_basis": {
+      "type": "string"
+    },
+    "sharing_method": {
+      "type": "string",
+      "enum": [
+        "query",
+        "download",
+        "invoke"
+      ]
+    },
+    "usage_restrictions": {
+      "type": "string"
+    },
+    "security_classification": {
+      "type": "string"
+    },
+    "open_to_public": {
+      "type": "boolean"
+    },
+    "open_conditions": {
+      "type": "string"
+    },
+    "department_approval_ref": {
+      "type": "string"
+    },
+    "assessment_ref": {
+      "type": "string"
+    },
+    "related_resource_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "classification",
+    "format",
+    "data_layer",
+    "sharing_type"
+  ],
+  "$defs": {
+    "DirectoryItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "business_name": {
+          "type": "string"
+        },
+        "logical_type": {
+          "type": "string"
+        },
+        "length": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "precision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scale": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "nullable": {
+          "type": "boolean"
+        },
+        "sensitive": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

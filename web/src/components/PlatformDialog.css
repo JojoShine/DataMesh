@@ -1,0 +1,10 @@
+.platform-dialog .page-heading { margin: 0; }
+.platform-dialog .page-heading h2.ant-typography { font-size: 18px; font-weight: 700; }
+.platform-dialog .page-heading p { font-weight: 400; }
+.platform-dialog .ant-modal-body { padding-top: 24px; }
+.platform-dialog .ant-modal-body > :last-child { margin-bottom: 0; }
+.platform-dialog .ant-modal-footer { margin-top: 24px; }
+.platform-dialog-footer { display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 16px; }
+.platform-dialog-extra-actions { display: contents; }
+.platform-dialog-footer > .ant-space { justify-content: flex-end; flex-wrap: wrap; gap: 16px !important; }
+.platform-dialog-actions { display: flex; justify-content: flex-end; gap: 16px; }

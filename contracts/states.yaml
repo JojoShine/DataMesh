@@ -1,0 +1,135 @@
+{
+  "task": {
+    "initial": "draft",
+    "transitions": {
+      "draft": [
+        "preflight_passed"
+      ],
+      "preflight_passed": [
+        "initializing",
+        "draft"
+      ],
+      "initializing": [
+        "streaming",
+        "pausing",
+        "error",
+        "manual_required"
+      ],
+      "streaming": [
+        "pausing",
+        "error",
+        "manual_required",
+        "finished"
+      ],
+      "pausing": [
+        "paused",
+        "error",
+        "manual_required"
+      ],
+      "paused": [
+        "recovering",
+        "finished"
+      ],
+      "error": [
+        "recovering",
+        "manual_required"
+      ],
+      "recovering": [
+        "initializing",
+        "streaming",
+        "error",
+        "manual_required"
+      ],
+      "manual_required": [
+        "initializing",
+        "finished"
+      ],
+      "finished": []
+    }
+  },
+  "operation": {
+    "initial": "accepted",
+    "transitions": {
+      "accepted": [
+        "running",
+        "failed"
+      ],
+      "running": [
+        "succeeded",
+        "failed",
+        "unknown"
+      ],
+      "unknown": [
+        "running",
+        "succeeded",
+        "failed"
+      ],
+      "succeeded": [],
+      "failed": []
+    }
+  },
+  "publication_status": [
+    "draft",
+    "published",
+    "withdrawn"
+  ],
+  "quality_status": [
+    "not_checked",
+    "passed",
+    "blocked"
+  ],
+  "completeness_status": [
+    "pending",
+    "complete",
+    "archive_gap",
+    "result_gap",
+    "both_gap"
+  ],
+  "data_layers": [
+    "raw_object",
+    "governed_dataset"
+  ],
+  "directory_revision_status": [
+    "draft",
+    "department_pending",
+    "authority_pending",
+    "approved",
+    "rejected",
+    "withdrawn"
+  ],
+  "directory_status": [
+    "draft",
+    "published",
+    "withdrawn"
+  ],
+  "mount_revision_status": [
+    "draft",
+    "validated",
+    "pending",
+    "approved",
+    "rejected",
+    "withdrawn"
+  ],
+  "mount_status": [
+    "draft",
+    "active",
+    "suspended",
+    "unmounted"
+  ],
+  "application_status": [
+    "submitted",
+    "needs_supplement",
+    "approved",
+    "rejected",
+    "withdrawn"
+  ],
+  "resource_upload_status": [
+    "uploaded",
+    "ready",
+    "expired",
+    "cleaned"
+  ],
+  "managed_resource_status": [
+    "ready"
+  ]
+}

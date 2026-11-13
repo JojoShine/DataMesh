@@ -1,0 +1,14 @@
+{
+  "resource": {
+    "resource_type": "raw_object",
+    "resource_id": "object-demo",
+    "contract_version": 1
+  },
+  "department_id": "department-consumer",
+  "purpose": "原始交换验收",
+  "fields": [
+    "id",
+    "name"
+  ],
+  "expires_at": "2026-12-01T00:00:00Z"
+}

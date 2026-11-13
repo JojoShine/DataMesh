@@ -1,0 +1,16 @@
+// @vitest-environment jsdom
+import {useState} from "react";
+import {App,ConfigProvider} from "antd";
+import {cleanup,render,screen,fireEvent,waitFor} from "@testing-library/react";
+import {afterEach,beforeEach,expect,it,vi} from "vitest";
+import userEvent from "@testing-library/user-event";
+import type {GovernanceFlowNode} from "../src/api/governance";
+import {GovernanceScriptConfig,scriptFields} from "../src/components/GovernanceScriptConfig";
+vi.mock("../src/components/GovernanceCodeEditor",()=>({default:({value,onChange}:{value:string;onChange:(value:string)=>void})=><textarea aria-label="自定义处理代码" value={value} onChange={e=>onChange(e.target.value)}/>}));
+const fields=[{name:"name",logical_type:"string",nullable:false,primary_key:false,sensitive:true,precision:null,scale:null}];
+beforeEach(()=>{Object.defineProperty(window,"matchMedia",{writable:true,value:vi.fn(()=>({matches:false,addListener:vi.fn(),removeListener:vi.fn(),addEventListener:vi.fn(),removeEventListener:vi.fn()}))});vi.stubGlobal("ResizeObserver",class{observe(){}unobserve(){}disconnect(){}})});
+afterEach(()=>{cleanup();vi.unstubAllGlobals()});
+function Editor(){const [node,setNode]=useState<GovernanceFlowNode>({id:"script",kind:"script",inputs:[{node:"source"}],script:{language:"python",runtime_version:"",source:"def transform(row, context):\n return row",fields:scriptFields(fields)}});return <ConfigProvider><App><GovernanceScriptConfig node={node} inputFields={fields} runtimes={[{language:"python",runtime_version:"python@sha256:"+"a".repeat(64),libraries:["Decimal"],available:true},{language:"javascript",runtime_version:"javascript@sha256:"+"b".repeat(64),libraries:["decimal.js"],available:true}]} editable onChange={setNode}/><output data-testid="definition">{JSON.stringify(node)}</output></App></ConfigProvider>}
+it("固定可用环境、保留编辑代码，并继承敏感字段而不能降级",async()=>{render(<Editor/>);await waitFor(()=>expect(screen.getByTestId("definition").textContent).toContain("python@sha256:"));expect(screen.getByRole<HTMLInputElement>("checkbox",{name:"敏感字段"}).disabled).toBe(true);expect(screen.getByRole<HTMLInputElement>("checkbox",{name:"敏感字段"}).checked).toBe(true);const editor=await screen.findByLabelText("自定义处理代码");fireEvent.change(editor,{target:{value:"def transform(row, context):\n return dict(row)"}});expect(screen.getByTestId("definition").textContent).toContain("return dict(row)");fireEvent.change(screen.getByLabelText("代码输出字段名称"),{target:{value:"customer_name"}});expect(screen.getByTestId("definition").textContent).toContain('"name":"customer_name"');});
+
+it("切换语言保留各自代码草稿和对应固定环境",async()=>{const user=userEvent.setup();render(<Editor/>);const editor=await screen.findByLabelText("自定义处理代码");fireEvent.change(editor,{target:{value:"PYTHON_CUSTOM"}});await user.click(screen.getByRole("combobox",{name:"代码语言"}));await user.click(screen.getByText("JavaScript",{selector:".ant-select-item-option-content"}));expect(screen.getByTestId("definition").textContent).toContain("javascript@sha256:");fireEvent.change(await screen.findByLabelText("自定义处理代码"),{target:{value:"JS_CUSTOM"}});await user.click(screen.getByRole("combobox",{name:"代码语言"}));await user.click(screen.getByText("Python",{selector:".ant-select-item-option-content"}));expect((await screen.findByLabelText("自定义处理代码") as HTMLTextAreaElement).value).toBe("PYTHON_CUSTOM");});

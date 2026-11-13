@@ -1,0 +1,23 @@
+{
+  "connector.class": "io.debezium.connector.oracle.OracleConnector",
+  "tasks.max": "1",
+  "database.hostname": "oracle-source",
+  "database.port": "1521",
+  "database.user": "C##DATAMESH_CDC",
+  "database.password": "${SOURCE_CDC_PASSWORD}",
+  "database.dbname": "FREE",
+  "database.pdb.name": "FREEPDB1",
+  "topic.prefix": "datamesh_oracle",
+  "table.include.list": "DATAMESH_SOURCE.CUSTOMERS",
+  "snapshot.mode": "initial",
+  "database.connection.adapter": "logminer",
+  "log.mining.strategy": "online_catalog",
+  "decimal.handling.mode": "string",
+  "tombstones.on.delete": "false",
+  "schema.history.internal.kafka.bootstrap.servers": "kafka:9092",
+  "schema.history.internal.kafka.topic": "datamesh.oracle.schema_history",
+  "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "key.converter.schemas.enable": "false",
+  "value.converter.schemas.enable": "false"
+}

@@ -1,0 +1,31 @@
+{
+  "event_id": "event-example-1",
+  "source_id": "source-demo",
+  "object_id": "public.customers",
+  "run_id": "run-demo-1",
+  "op": "update",
+  "key": {
+    "id": 1
+  },
+  "source_position": {
+    "kind": "postgres",
+    "lsn": "0/16B6C50"
+  },
+  "source_order": {
+    "scope": "source-demo:public.customers:epoch-1",
+    "value": "23817296"
+  },
+  "ordering_guarantee": "source_order",
+  "schema_version": 1,
+  "captured_at": "2026-10-15T04:00:00Z",
+  "before": {
+    "id": 1,
+    "name": "旧名称"
+  },
+  "after": {
+    "id": 1,
+    "name": "样例客户",
+    "amount": "1234567890.123456"
+  },
+  "trace_id": "trace-demo-1"
+}

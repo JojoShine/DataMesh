@@ -1,0 +1,7 @@
+.governance-guide { margin-bottom: 24px; padding: 16px 20px; border: 1px solid #DCE6F3; border-radius: 6px; background: #fff; color: #102349; font-size: 15px; overflow-wrap: anywhere; }
+.governance-guide summary { cursor: pointer; font-weight: 600; }
+.governance-guide p { margin: 12px 0 0; line-height: 1.7; }
+.governance-guide summary:focus-visible { outline: 2px solid #1677FF; outline-offset: 4px; }
+.governance-guide-links { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.governance-guide .governance-guide-example { margin-top: 16px; padding: 16px; background: var(--page-bg, #F3F8FE); border-left: 2px solid var(--accent, #1677FF); border-radius: 4px; }
+.governance-guide-example > strong { display: block; margin-bottom: 8px; }

@@ -1,0 +1,12 @@
+.governance-continuous-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.governance-continuous-flow > .ant-select {
+  align-self: flex-start;
+}
+
+.governance-continuous-flow > .detail-section { margin-top: 0; }

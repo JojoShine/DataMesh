@@ -1,0 +1,9 @@
+.local
+.git
+docs
+node_modules
+web/node_modules
+**/__pycache__
+
+.superpowers
+.idea

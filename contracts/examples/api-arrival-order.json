@@ -1,0 +1,25 @@
+{
+  "event_id": "event-api-1",
+  "source_id": "source-demo",
+  "object_id": "public.customers",
+  "run_id": "run-demo-1",
+  "op": "create",
+  "key": {
+    "id": 1
+  },
+  "source_position": {
+    "kind": "api",
+    "request_id": "request-1",
+    "batch_index": 0
+  },
+  "source_order": null,
+  "ordering_guarantee": "per_key_arrival",
+  "schema_version": 1,
+  "captured_at": "2026-10-15T04:00:00Z",
+  "before": null,
+  "after": {
+    "id": 1,
+    "name": "API样例"
+  },
+  "trace_id": "trace-demo-1"
+}

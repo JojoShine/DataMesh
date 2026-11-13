@@ -1,0 +1,622 @@
+{
+  "name": "${COMPOSE_PROJECT_NAME:?project name required}",
+  "services": {
+    "postgres": {
+      "image": "${POSTGRES_IMAGE:?release digest required}",
+      "environment": {
+        "POSTGRES_USER": "datamesh_bootstrap",
+        "POSTGRES_DB": "datamesh",
+        "POSTGRES_PASSWORD_FILE": "/run/secrets/postgres-admin-password",
+        "APP_DB_PASSWORD_FILE": "/run/secrets/app-db-password",
+        "MIGRATION_DB_PASSWORD_FILE": "/run/secrets/migration-db-password"
+      },
+      "volumes": [
+        "platform_pg:/var/lib/postgresql/data",
+        "./config/postgres/01-roles.sh:/docker-entrypoint-initdb.d/01-roles.sh:ro",
+        "./secrets/postgres-admin-password:/run/secrets/postgres-admin-password:ro",
+        "./secrets/app-db-password:/run/secrets/app-db-password:ro",
+        "./secrets/migration-db-password:/run/secrets/migration-db-password:ro"
+      ],
+      "mem_limit": "384m",
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "pg_isready -U datamesh_bootstrap -d datamesh"
+        ],
+        "interval": "3s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "restart": "unless-stopped",
+      "init": true
+    },
+    "rustfs": {
+      "image": "${RUSTFS_IMAGE:?release digest required}",
+      "environment": {
+        "RUSTFS_ACCESS_KEY": "${RUSTFS_ACCESS_KEY:?run init}",
+        "RUSTFS_SECRET_KEY": "${RUSTFS_SECRET_KEY:?run init}",
+        "RUSTFS_CONSOLE_ENABLE": "false"
+      },
+      "command": [
+        "/data"
+      ],
+      "volumes": [
+        "raw_archive:/data",
+        "rustfs_logs:/logs"
+      ],
+      "mem_limit": "384m",
+      "restart": "unless-stopped",
+      "init": true
+    },
+    "app": {
+      "image": "${APP_IMAGE:?release digest required}",
+      "environment": {
+        "APP_DSN": "${DATABASE_URL:?application connection required}",
+        "CSRF_KEY": "${CSRF_KEY:?run init}",
+        "APP_ORIGIN": "${APP_ORIGIN}",
+        "TLS_CERT": "/certs/server.crt",
+        "TLS_KEY": "/certs/server.key",
+        "CREDENTIAL_KEY": "${CREDENTIAL_KEY:?run init}",
+        "RUSTFS_ACCESS_KEY": "${RUSTFS_ACCESS_KEY}",
+        "RUSTFS_SECRET_KEY": "${RUSTFS_SECRET_KEY}",
+        "DORIS_WRITER_PASSWORD": "${DORIS_WRITER_PASSWORD}",
+        "DORIS_READER_PASSWORD": "${DORIS_READER_PASSWORD:-}",
+        "WEB_DIR": "/app/web",
+        "PUBLIC_TEST_ACCOUNTS_FILE": "${PUBLIC_TEST_ACCOUNTS_FILE:-}",
+        "FLINK_JOB_FILE": "/runtime/flink.json",
+        "SOURCE_ALLOWED_TARGETS": "${SOURCE_ALLOWED_TARGETS:-[]}",
+        "API_ALLOWED_TARGETS": "${API_ALLOWED_TARGETS:-[]}",
+        "ETL_MAX_ROWS": "${ETL_MAX_ROWS:-2000000}",
+        "ETL_MAX_BYTES": "${ETL_MAX_BYTES:-1073741824}",
+        "ETL_TIMEOUT_SECONDS": "${ETL_TIMEOUT_SECONDS:-1800}",
+        "CODE_RUNNER_URL": "http://code-runner:8080",
+        "CODE_RUNNER_TOKEN_FILE": "/code-secrets/token",
+        "GOVERNANCE_FLINK_GATEWAY": "http://sql-gateway:8083",
+        "GOVERNANCE_FLINK_CLUSTER": "http://jobmanager:8081",
+        "GOVERNANCE_STREAM_SCRIPT_TOKEN_FILE": "/stream-secrets/token",
+        "SECURITY_WATERMARK_KEY_ID": "${SECURITY_WATERMARK_KEY_ID:-}",
+        "SECURITY_WATERMARK_KEYS": "${SECURITY_WATERMARK_KEYS:-}",
+        "SOURCE_READER_ORIGIN": "http://source-reader:8093",
+        "SOURCE_READER_TOKEN": "${SOURCE_READER_TOKEN:-}",
+        "SANDBOX_DORIS_READER_PASSWORD": "${SANDBOX_DORIS_READER_PASSWORD:-}",
+        "SANDBOX_DORIS_WRITER_PASSWORD": "${SANDBOX_DORIS_WRITER_PASSWORD:-}",
+        "SANDBOX_DORIS_BE_URL": "http://doris-be:8040",
+        "GOMEMLIMIT": "448MiB",
+        "BASE_PATH": "${BASE_PATH?explicit prefix required}",
+        "PORT": "8080",
+        "TRUSTED_PROXY_IPS": "${TRUSTED_PROXY_IPS:?exact proxy IP required}",
+        "GOVERNANCE_DORIS_ADDRESS": "doris-fe:9030"
+      },
+      "volumes": [
+        "./config/public-test-accounts:/public-test-accounts:ro",
+        "./secrets/tls:/certs:ro",
+        "./config/runtime:/runtime:ro",
+        "./secrets/code-runner-token:/code-secrets/token:ro",
+        "./secrets/stream-script-token:/stream-secrets/token:ro"
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        }
+      },
+      "mem_limit": "512m",
+      "tmpfs": [
+        "/tmp:size=134217728,mode=1777"
+      ],
+      "user": "10001:10001",
+      "networks": [
+        "default",
+        "doris",
+        "code_control"
+      ],
+      "restart": "unless-stopped",
+      "init": true,
+      "ports": [
+        "127.0.0.1:${APP_PORT:?application port required}:8080"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "/app/bin/healthcheck"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "start_period": "20s",
+        "retries": 12
+      },
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ]
+    },
+    "kafka": {
+      "image": "${KAFKA_IMAGE:?release digest required}",
+      "hostname": "kafka",
+      "environment": {
+        "KAFKA_NODE_ID": "1",
+        "KAFKA_PROCESS_ROLES": "broker,controller",
+        "KAFKA_CONTROLLER_QUORUM_VOTERS": "1@kafka:9093",
+        "KAFKA_LISTENERS": "INTERNAL://:9092,CONTROLLER://:9093",
+        "KAFKA_ADVERTISED_LISTENERS": "INTERNAL://kafka:9092",
+        "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP": "INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT",
+        "KAFKA_INTER_BROKER_LISTENER_NAME": "INTERNAL",
+        "KAFKA_CONTROLLER_LISTENER_NAMES": "CONTROLLER",
+        "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR": "1",
+        "KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR": "1",
+        "KAFKA_TRANSACTION_STATE_LOG_MIN_ISR": "1",
+        "KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS": "0",
+        "KAFKA_LOG_DIRS": "/var/lib/kafka/data",
+        "KAFKA_LOG_RETENTION_HOURS": "72",
+        "KAFKA_HEAP_OPTS": "-Xms256m -Xmx384m",
+        "CLUSTER_ID": "MkU3OEVBNTcwNTJENDM2Qk"
+      },
+      "volumes": [
+        "kafka_data:/var/lib/kafka/data"
+      ],
+      "mem_limit": "640m",
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null"
+        ],
+        "start_period": "120s",
+        "interval": "10s",
+        "timeout": "8s",
+        "retries": 18
+      },
+      "restart": "unless-stopped",
+      "init": true
+    },
+    "connect": {
+      "image": "${CONNECT_IMAGE:?release digest required}",
+      "environment": {
+        "BOOTSTRAP_SERVERS": "kafka:9092",
+        "GROUP_ID": "datamesh-connect",
+        "CONFIG_STORAGE_TOPIC": "datamesh.connect.configs",
+        "OFFSET_STORAGE_TOPIC": "datamesh.connect.offsets",
+        "STATUS_STORAGE_TOPIC": "datamesh.connect.status",
+        "CONFIG_STORAGE_REPLICATION_FACTOR": "1",
+        "OFFSET_STORAGE_REPLICATION_FACTOR": "1",
+        "STATUS_STORAGE_REPLICATION_FACTOR": "1",
+        "KEY_CONVERTER": "org.apache.kafka.connect.json.JsonConverter",
+        "VALUE_CONVERTER": "org.apache.kafka.connect.json.JsonConverter",
+        "KEY_CONVERTER_SCHEMAS_ENABLE": "false",
+        "VALUE_CONVERTER_SCHEMAS_ENABLE": "false",
+        "HEAP_OPTS": "-Xms256m -Xmx512m",
+        "CONNECT_PLUGIN_DISCOVERY": "service_load"
+      },
+      "depends_on": {
+        "kafka": {
+          "condition": "service_healthy"
+        }
+      },
+      "mem_limit": "768m",
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:8083/connector-plugins >/dev/null"
+        ],
+        "start_period": "480s",
+        "interval": "5s",
+        "timeout": "5s",
+        "retries": 24
+      },
+      "restart": "unless-stopped",
+      "init": true
+    },
+    "jobmanager": {
+      "image": "${FLINK_IMAGE:?release digest required}",
+      "command": "jobmanager",
+      "environment": {
+        "FLINK_PROPERTIES": "jobmanager.rpc.address: jobmanager\njobmanager.memory.process.size: 768m\ntaskmanager.memory.process.size: 1024m\ntaskmanager.numberOfTaskSlots: 2\nparallelism.default: 1\nstate.checkpoints.dir: file:///opt/flink/state/checkpoints\nstate.savepoints.dir: file:///opt/flink/state/savepoints\nexecution.checkpointing.interval: 5s\nexecution.checkpointing.externalized-checkpoint-retention: RETAIN_ON_CANCELLATION\n"
+      },
+      "volumes": [
+        "flink_state:/opt/flink/state",
+        "./plugins/flink:/opt/flink/usrlib:ro",
+        "./.local/smoke:/opt/flink/smoke:ro"
+      ],
+      "networks": [
+        "default",
+        "doris"
+      ],
+      "mem_limit": "768m",
+      "depends_on": {
+        "flink-state-init": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "restart": "unless-stopped",
+      "init": true
+    },
+    "taskmanager": {
+      "image": "${FLINK_IMAGE:?release digest required}",
+      "command": "taskmanager",
+      "environment": {
+        "FLINK_PROPERTIES": "jobmanager.rpc.address: jobmanager\njobmanager.memory.process.size: 768m\ntaskmanager.memory.process.size: 1024m\ntaskmanager.numberOfTaskSlots: 2\nparallelism.default: 1\nstate.checkpoints.dir: file:///opt/flink/state/checkpoints\nstate.savepoints.dir: file:///opt/flink/state/savepoints\nexecution.checkpointing.interval: 5s\nexecution.checkpointing.externalized-checkpoint-retention: RETAIN_ON_CANCELLATION\n",
+        "GOVERNANCE_STREAM_SCRIPT_TOKEN_FILE": "/stream-secrets/token",
+        "GOVERNANCE_STREAM_SCRIPT_ORIGIN": "https://app:8080",
+        "GOVERNANCE_STREAM_SCRIPT_CA_FILE": "/certs/server.crt",
+        "GOVERNANCE_STREAM_SCRIPT_TLS_NAME": "localhost"
+      },
+      "volumes": [
+        "flink_state:/opt/flink/state",
+        "./plugins/flink:/opt/flink/usrlib:ro",
+        "./.local/smoke:/opt/flink/smoke:ro",
+        "./secrets/stream-script-token:/stream-secrets/token:ro",
+        "./secrets/tls/server.crt:/certs/server.crt:ro"
+      ],
+      "networks": [
+        "default",
+        "doris"
+      ],
+      "mem_limit": "1024m",
+      "depends_on": {
+        "jobmanager": {
+          "condition": "service_started"
+        },
+        "flink-state-init": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "group_add": [
+        "10001"
+      ],
+      "restart": "unless-stopped",
+      "init": true
+    },
+    "flink-state-init": {
+      "image": "${POSTGRES_IMAGE:?release digest required}",
+      "entrypoint": [
+        "sh",
+        "-c",
+        "chown -R 9999:9999 /state"
+      ],
+      "volumes": [
+        "flink_state:/state"
+      ],
+      "network_mode": "none",
+      "mem_limit": "64m",
+      "restart": "no",
+      "init": true
+    },
+    "doris-fe": {
+      "image": "${DORIS_FE_IMAGE:?release digest required}",
+      "hostname": "doris-fe",
+      "entrypoint": [
+        "bash",
+        "/local/fe-start.sh"
+      ],
+      "environment": {
+        "FE_SERVERS": "fe1:${DORIS_FE_IP:?Doris network required}:9010",
+        "FE_ID": "1",
+        "DORIS_ROOT_PASSWORD": "${DORIS_ROOT_PASSWORD:?run init}",
+        "DORIS_WRITER_PASSWORD": "${DORIS_WRITER_PASSWORD:?run init}",
+        "DORIS_READER_PASSWORD": "${DORIS_READER_PASSWORD:-}",
+        "SANDBOX_DORIS_READER_PASSWORD": "${SANDBOX_DORIS_READER_PASSWORD:?sandbox secret required}",
+        "SANDBOX_DORIS_WRITER_PASSWORD": "${SANDBOX_DORIS_WRITER_PASSWORD:?sandbox secret required}",
+        "DORIS_PRIORITY_NETWORKS": "${DORIS_SUBNET:?Doris network required}"
+      },
+      "volumes": [
+        "doris_meta:/opt/apache-doris/fe/doris-meta",
+        "doris_fe_logs:/opt/apache-doris/fe/log",
+        "./config/doris/fe-start.sh:/local/fe-start.sh:ro"
+      ],
+      "networks": {
+        "default": {},
+        "doris": {
+          "ipv4_address": "${DORIS_FE_IP:?Doris network required}"
+        }
+      },
+      "mem_limit": "1536m",
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "MYSQL_PWD=\"$$DORIS_ROOT_PASSWORD\" mysql -h127.0.0.1 -P9030 -uroot -e \"SHOW FRONTENDS\" >/dev/null 2>&1"
+        ],
+        "interval": "5s",
+        "timeout": "5s",
+        "retries": 36
+      },
+      "restart": "unless-stopped",
+      "init": true
+    },
+    "doris-be": {
+      "image": "${DORIS_BE_IMAGE:?release digest required}",
+      "hostname": "doris-be",
+      "entrypoint": [
+        "bash",
+        "/local/be-start.sh"
+      ],
+      "environment": {
+        "MASTER_FE_IP": "${DORIS_FE_IP:?Doris network required}",
+        "CURRENT_BE_IP": "${DORIS_BE_IP:?Doris network required}",
+        "CURRENT_BE_PORT": "9050",
+        "PRIORITY_NETWORKS": "${DORIS_SUBNET:?Doris network required}",
+        "MYSQL_PWD": "${DORIS_ROOT_PASSWORD}"
+      },
+      "volumes": [
+        "doris_storage:/opt/apache-doris/be/storage",
+        "doris_be_logs:/opt/apache-doris/be/log",
+        "./config/doris/be-start.sh:/local/be-start.sh:ro"
+      ],
+      "networks": {
+        "default": {},
+        "doris": {
+          "ipv4_address": "${DORIS_BE_IP:?Doris network required}"
+        }
+      },
+      "depends_on": {
+        "doris-fe": {
+          "condition": "service_healthy"
+        }
+      },
+      "mem_limit": "3072m",
+      "ulimits": {
+        "nofile": {
+          "soft": 65536,
+          "hard": 65536
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:8040/api/health >/dev/null"
+        ],
+        "interval": "5s",
+        "timeout": "5s",
+        "retries": 24
+      },
+      "restart": "unless-stopped",
+      "init": true
+    },
+    "postgres-source": {
+      "image": "${POSTGRES_IMAGE:?release digest required}",
+      "environment": {
+        "POSTGRES_USER": "source_owner",
+        "POSTGRES_DB": "sample",
+        "POSTGRES_PASSWORD": "${SOURCE_DB_PASSWORD:?run init}",
+        "SOURCE_CDC_PASSWORD": "${SOURCE_CDC_PASSWORD:?run init}"
+      },
+      "command": [
+        "postgres",
+        "-c",
+        "wal_level=logical",
+        "-c",
+        "max_replication_slots=10",
+        "-c",
+        "max_wal_senders=10",
+        "-c",
+        "max_slot_wal_keep_size=512MB"
+      ],
+      "volumes": [
+        "source_pg:/var/lib/postgresql/data",
+        "./config/source-postgres/01-source.sh:/docker-entrypoint-initdb.d/01-source.sh:ro"
+      ],
+      "mem_limit": "256m",
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "pg_isready -U source_owner -d sample"
+        ],
+        "interval": "3s",
+        "timeout": "3s",
+        "retries": 40
+      },
+      "restart": "unless-stopped",
+      "init": true
+    },
+    "code-runner": {
+      "image": "${APP_IMAGE:?release digest required}",
+      "environment": {
+        "CODE_RUNNER_TOKEN_FILE": "/code-secrets/token",
+        "CODE_RUNNER_NAMESPACE": "datamesh-production-governance",
+        "CODE_PYTHON_IMAGE": "${CODE_PYTHON_IMAGE:-}",
+        "CODE_JAVASCRIPT_IMAGE": "${CODE_JAVASCRIPT_IMAGE:-}",
+        "CODE_RUNNER_MAX_JOBS": "1"
+      },
+      "volumes": [
+        "./secrets/code-runner-token:/code-secrets/token:ro",
+        "/var/run/docker.sock:/var/run/docker.sock"
+      ],
+      "user": "10001:10001",
+      "group_add": [
+        "${DOCKER_SOCKET_GID:?socket group required}"
+      ],
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "networks": [
+        "code_control"
+      ],
+      "mem_limit": "128m",
+      "cpus": 1,
+      "pids_limit": 32,
+      "restart": "unless-stopped",
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "/app/code-runner",
+          "--health"
+        ],
+        "interval": "15s",
+        "timeout": "8s",
+        "retries": 3
+      },
+      "init": true,
+      "command": [
+        "/app/code-runner"
+      ]
+    },
+    "sql-gateway": {
+      "image": "${FLINK_IMAGE:?release digest required}",
+      "entrypoint": [
+        "/bin/bash",
+        "/local/sql-gateway.sh"
+      ],
+      "environment": {
+        "FLINK_PROPERTIES": "jobmanager.rpc.address: jobmanager\nrest.address: jobmanager\nrest.port: 8081\n",
+        "GOVERNANCE_STREAM_SCRIPT_TOKEN_FILE": "/stream-secrets/token",
+        "GOVERNANCE_STREAM_SCRIPT_ORIGIN": "https://app:8080",
+        "GOVERNANCE_STREAM_SCRIPT_CA_FILE": "/certs/server.crt",
+        "GOVERNANCE_STREAM_SCRIPT_TLS_NAME": "localhost"
+      },
+      "volumes": [
+        "./config/flink/sql-gateway.sh:/local/sql-gateway.sh:ro",
+        "./plugins/flink:/opt/flink/usrlib:ro",
+        "flink_state:/opt/flink/state",
+        "./secrets/stream-script-token:/stream-secrets/token:ro",
+        "./secrets/tls/server.crt:/certs/server.crt:ro"
+      ],
+      "mem_limit": "1280m",
+      "depends_on": {
+        "jobmanager": {
+          "condition": "service_started"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:8083/v1/info >/dev/null"
+        ],
+        "interval": "5s",
+        "timeout": "5s",
+        "retries": 30
+      },
+      "group_add": [
+        "10001"
+      ],
+      "restart": "unless-stopped",
+      "init": true
+    },
+    "source-reader": {
+      "image": "${SOURCE_READER_IMAGE:?release digest required}",
+      "environment": {
+        "SOURCE_READER_TOKEN": "${SOURCE_READER_TOKEN:-}"
+      },
+      "volumes": [
+        "./plugins/jdbc:/opt/drivers:ro"
+      ],
+      "read_only": true,
+      "tmpfs": [
+        "/tmp:size=32m,noexec,nosuid"
+      ],
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "mem_limit": "640m",
+      "cpus": 1,
+      "pids_limit": 64,
+      "restart": "unless-stopped",
+      "networks": [
+        "default",
+        "doris"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "java",
+          "-Xms8m",
+          "-Xmx32m",
+          "-cp",
+          "/app/classes:/app/lib/*",
+          "datamesh.source.Main",
+          "--health"
+        ],
+        "interval": "15s",
+        "timeout": "8s",
+        "retries": 6,
+        "start_period": "15s"
+      },
+      "init": true
+    },
+    "migrate": {
+      "image": "${APP_IMAGE:?release digest required}",
+      "profiles": [
+        "ops"
+      ],
+      "restart": "no",
+      "command": [
+        "/app/bin/migrate"
+      ],
+      "environment": {
+        "MIGRATION_DATABASE_URL": "${MIGRATION_DATABASE_URL:?migration connection required}"
+      },
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        }
+      },
+      "mem_limit": "256m",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ]
+    },
+    "bootstrap": {
+      "image": "${APP_IMAGE:?release digest required}",
+      "profiles": [
+        "ops"
+      ],
+      "restart": "no",
+      "command": [
+        "/app/bin/bootstrap"
+      ],
+      "environment": {
+        "DATABASE_URL": "${DATABASE_URL:?application connection required}",
+        "CSRF_KEY": "${CSRF_KEY:?required}",
+        "BOOTSTRAP_ADMIN_FILE": "/run/secrets/bootstrap-admin.json"
+      },
+      "volumes": [
+        "${BOOTSTRAP_ADMIN_FILE:-./secrets/bootstrap-admin.json}:/run/secrets/bootstrap-admin.json:ro"
+      ],
+      "mem_limit": "256m",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ]
+    }
+  },
+  "volumes": {
+    "doris_be_logs": {},
+    "doris_fe_logs": {},
+    "doris_meta": {},
+    "doris_storage": {},
+    "flink_state": {},
+    "kafka_data": {},
+    "platform_pg": {},
+    "raw_archive": {},
+    "rustfs_logs": {},
+    "source_pg": {}
+  },
+  "networks": {
+    "default": {},
+    "doris": {
+      "ipam": {
+        "config": [
+          {
+            "subnet": "${DORIS_SUBNET:?Doris network required}"
+          }
+        ]
+      }
+    },
+    "code_control": {
+      "internal": true
+    }
+  }
+}

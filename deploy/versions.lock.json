@@ -1,0 +1,103 @@
+{
+  "platform": "linux/arm64",
+  "images": {
+    "postgres": {
+      "version": "17.11-alpine",
+      "reference": "public.ecr.aws/docker/library/postgres@sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73",
+      "status": "native-smoke-validated"
+    },
+    "rustfs": {
+      "version": "1.0.0",
+      "reference": "rustfs/rustfs:1.0.0@sha256:8cc9801755448b71a786705ce76692c77e14936cccd87cf2fc31842e58f4d1ff",
+      "status": "native-smoke-validated"
+    },
+    "go": {
+      "version": "1.25.5-alpine",
+      "reference": "golang:1.25.5-alpine@sha256:ac09a5f469f307e5da71e766b0bd59c9c49ea460a528cc3e6686513d64a6f1fb",
+      "status": "native-smoke-validated"
+    },
+    "kafka": {
+      "version": "3.9.1",
+      "reference": "apache/kafka:3.9.1@sha256:4ceccc577f03f51f6af8dbfda55194d0d892f4fa7913ffbded567ce3895622ed",
+      "status": "native-smoke-validated",
+      "image_id": "sha256:4ceccc577f03f51f6af8dbfda55194d0d892f4fa7913ffbded567ce3895622ed"
+    },
+    "connect": {
+      "version": "3.6.3.Final",
+      "reference": "quay.io/debezium/connect:3.6.3.Final@sha256:4ce252b1ff092b20d158c5a638889e9a6d2e2dd623c3e89b3d3cafd2100d130b",
+      "status": "native-smoke-validated",
+      "reason": "Oracle 26ai LogMiner is explicitly listed in the 3.6 support matrix"
+    },
+    "flink": {
+      "version": "1.20.3-scala_2.12-java17",
+      "reference": "flink:1.20.3-scala_2.12-java17@sha256:6a2b771c073b523e43d72b46e338ce6cef25e969965444f6afe1b0bb15fa9772",
+      "status": "native-smoke-validated",
+      "image_id": "sha256:6a2b771c073b523e43d72b46e338ce6cef25e969965444f6afe1b0bb15fa9772"
+    },
+    "mysql": {
+      "version": "8.4.7",
+      "reference": "mysql:8.4.7@sha256:0426ec38c7a10aa45ba383887df7878f74ee70e2fd589c7b69207f3577901903",
+      "status": "native-smoke-validated",
+      "image_id": "sha256:0426ec38c7a10aa45ba383887df7878f74ee70e2fd589c7b69207f3577901903"
+    },
+    "oracle": {
+      "version": "23.26.3-slim",
+      "reference": "gvenzl/oracle-free:23.26.3-slim@sha256:6d61d267a3b978c24c5ac1790e62e927416a0aec446bd86e4b3a1527562757bd",
+      "status": "native-smoke-validated"
+    },
+    "doris-fe": {
+      "version": "fe-4.0.3",
+      "reference": "apache/doris:fe-4.0.3@sha256:ca3f9ba426885d3b9d5a59e38bdb9946ede0d36d8e3b0a7a6c18b04a9d8afe78",
+      "status": "native-smoke-validated",
+      "image_id": "sha256:ca3f9ba426885d3b9d5a59e38bdb9946ede0d36d8e3b0a7a6c18b04a9d8afe78"
+    },
+    "doris-be": {
+      "version": "be-4.0.3",
+      "reference": "apache/doris:be-4.0.3@sha256:b76a0cbac867d69d62b0c2b73119eef9a577777f29f3954480a8ee95471c85cc",
+      "status": "native-smoke-validated",
+      "image_id": "sha256:b76a0cbac867d69d62b0c2b73119eef9a577777f29f3954480a8ee95471c85cc"
+    },
+    "migrate": {
+      "version": "v4.19.1",
+      "reference": "migrate/migrate:v4.19.1@sha256:cc4ad8e19d66791e3689405d9a028ce6e9614f32032db14acda1469f7201d6e4",
+      "status": "native-smoke-validated",
+      "image_id": "sha256:cc4ad8e19d66791e3689405d9a028ce6e9614f32032db14acda1469f7201d6e4"
+    },
+    "governance-code-python": {
+      "version": "Python 3.14.9",
+      "reference": "public.ecr.aws/docker/library/python@sha256:f8417a152ae83c696bee8861ed715acd93a9c9a925cd868325bc0afd788537e6",
+      "status": "verified-isolated-runtime",
+      "runtime_image": "sha256:be291012641c34789404e4ce4bdb0481ea7a758359f2df904ccd966613938465"
+    },
+    "governance-code-javascript": {
+      "version": "v24.22.1",
+      "reference": "public.ecr.aws/docker/library/node@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205",
+      "status": "verified-isolated-runtime",
+      "runtime_image": "sha256:31ded01d4702a087af3766a2fd1477fc942024b29a102a3562dcdfefaa05c473"
+    }
+  },
+  "plugins": [
+    {
+      "file": "flink-doris-connector-1.20-25.1.0.jar",
+      "sha256": "70295bc15432e0594a5a875e87a588b8197cb2be7a5d4b9cbfeb24c5dc10e911",
+      "source": "https://repo.maven.apache.org/maven2/",
+      "status": "real-job-and-savepoint-restore-validated",
+      "url": "https://repo.maven.apache.org/maven2/org/apache/doris/flink-doris-connector-1.20/25.1.0/flink-doris-connector-1.20-25.1.0.jar"
+    },
+    {
+      "file": "flink-sql-connector-kafka-3.4.0-1.20.jar",
+      "sha256": "b860724fd97d7da0901bfc3859680442f4c1aa2b35ab944407558b393a1cf93e",
+      "source": "https://repo.maven.apache.org/maven2/",
+      "status": "real-job-and-savepoint-restore-validated",
+      "url": "https://repo.maven.apache.org/maven2/org/apache/flink/flink-sql-connector-kafka/3.4.0-1.20/flink-sql-connector-kafka-3.4.0-1.20.jar"
+    }
+  ],
+  "application": {
+    "go": "1.25.5",
+    "gin": "1.11.0",
+    "gorm": "1.31.1",
+    "gorm-postgres": "1.6.0",
+    "x-crypto": "0.45.0",
+    "dependency_integrity": "go.sum"
+  }
+}

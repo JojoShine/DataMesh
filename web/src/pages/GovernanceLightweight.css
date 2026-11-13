@@ -1,0 +1,32 @@
+.lightweight-workspace{font-size:15px;min-width:0}.lightweight-layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:24px}.lightweight-units,.lightweight-main{background:#fff;border:1px solid var(--border,#dce6f3);border-radius:8px;padding:20px;min-width:0}.lightweight-workspace h3{font-size:18px;font-weight:700;margin:0 0 16px}.lightweight-editor{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,1fr);gap:24px;margin-top:24px}.lightweight-config{min-width:0;border-left:1px solid #dce6f3;padding-left:24px}.lightweight-config .ant-select{width:100%}.lightweight-config .ant-checkbox-group{display:flex;gap:16px;flex-wrap:wrap}.lightweight-upload{padding-bottom:24px;border-bottom:1px solid #dce6f3}.lightweight-step-actions{margin-top:24px}.lightweight-actions{position:sticky;bottom:0;z-index:2;display:flex;justify-content:flex-end;background:#fff;border-top:1px solid #dce6f3;padding-top:16px;margin-top:24px}.lightweight-run{margin-top:24px;min-width:0}.lightweight-record{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere;max-width:360px}.lightweight-config .governance-dialog-actions{margin-top:16px}.lightweight-workspace .ant-alert{margin:16px 0}.lightweight-main>.ant-form{max-width:640px}@media(max-width:1100px){.lightweight-layout{grid-template-columns:200px minmax(0,1fr)}.lightweight-editor{grid-template-columns:minmax(0,1fr)}.lightweight-config{border-left:0;border-top:1px solid #dce6f3;padding:24px 0 0}}@media(max-width:720px){.lightweight-layout{grid-template-columns:minmax(0,1fr)}.lightweight-editor{grid-template-columns:minmax(0,1fr)}.lightweight-actions .ant-space{justify-content:flex-end}}
+
+.lightweight-units { align-self: start; }
+.lightweight-unit-list { min-height: 32px; max-height: 60dvh; overflow-y: auto; margin-top: 16px; }
+.lightweight-unit-list ul { display: grid; gap: 4px; list-style: none; margin: 0; padding: 0; }
+.lightweight-unit-list li { min-width: 0; border-radius: 4px; }
+.lightweight-unit-list li:hover { background: #f3f8fe; }
+.lightweight-unit-list li.is-current { background: #eaf3ff; box-shadow: inset 2px 0 #1677ff; }
+.lightweight-unit-link.ant-btn { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; height: 32px; padding: 0 12px; text-align: left; }
+.lightweight-unit-name { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.is-current .lightweight-unit-name { font-weight: 600; }
+.lightweight-unit-pagination { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border,#dce6f3); }
+.lightweight-unit-pagination .ant-pagination { margin: 0; }
+.lightweight-unit-list .ant-empty { margin: 16px 0; }
+.lightweight-unit-version { flex: none; color: var(--muted,#60749a); font-size: 13px; font-weight: 400; }
+
+.lightweight-editor-loading { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 240px; color: var(--muted,#60749a); }
+
+.lightweight-editor { grid-template-columns:minmax(240px, 2fr) minmax(0, 3fr); align-items:start; }
+.lightweight-config .governance-check-actions .governance-dialog-actions { margin-top:0; }
+.lightweight-config .governance-check-actions .ant-checkbox-wrapper { align-items:center; }
+.lightweight-config .governance-script-compact .governance-flow-input-row { margin-top:16px; margin-bottom:0; }
+.lightweight-config .governance-script-compact .ant-form-item { margin-bottom:16px; }
+.lightweight-config .governance-script-compact .governance-code-editor .cm-editor { height:240px; }
+.governance-script-fields > summary { cursor:pointer; font-size:18px; font-weight:600; margin-bottom:16px; }
+.governance-script-fields > .governance-editor-panel { margin-top:16px; }
+@media(max-width:1100px){.lightweight-editor{grid-template-columns:minmax(0,1fr)}}
+
+.lightweight-config .governance-script-guidance { margin:16px 0; border:1px solid var(--border,#dce6f3);border-radius:8px;padding:16px; }
+.lightweight-config .governance-script-guidance > summary {cursor:pointer;font-weight:600;}
+.lightweight-config .governance-script-guidance[open] > summary {margin-bottom:16px;}
+.lightweight-config .governance-script-guidance .governance-editor-panel {margin-bottom:16px;}

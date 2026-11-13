@@ -1,0 +1,9 @@
+# Existing data for real public experience
+
+User explicitly authorized adjusting the public experience to use existing main-instance data and actual query/governance/processing/delivery workflows. Preserve source data and standard grants, roles, independent reviews, masking, auditing, CSRF and abnormal-activity blocking. Do not publish existing private administrator credentials.
+
+Use an explicit `mode: full` entry in the existing public-test account configuration, still requiring the deliberate public-test DB marker, active matching account version, non-admin business roles and supported platforms. Project eligible sessions to normal business access (`public_test=false`, `full_experience=true`) at login and every authenticated request. Configuration defaults remain read-only, revoked/version-drifted accounts fail closed. No DB migration. Keep normal backend authorization. Full experience receives existing bounded abuse guard independent of isolated-cookie restrictions.
+
+Provision/update only explicitly public experience identities using normal admin APIs; publish their dedicated credentials via existing account endpoint. Link existing published data through normal independently approved processing/delivery authorization, retaining actual resource IDs. Never copy administrator credentials or return source secrets. Provide independent operator identity for approvals. Do not blanket-grant admin or bypass policy.
+
+Frontend uses actual API paths, normal workspace and permissions for projected full users; expose a truthful real-experience label and no browser reset control. Preserve legacy readonly mode. Verify real existing records, new real run, independent approval/self-approval rejection, CSRF/privilege negatives, guard blocking, both viewport layouts. Deploy main18443 while preserving existing business resources; own19443 stays intact.

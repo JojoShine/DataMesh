@@ -1,0 +1,231 @@
+.governance-flow-workspace { display: grid; grid-template-columns: minmax(0,1fr) 340px; gap: 24px; align-items: start; margin-bottom: 24px; }
+.governance-flow-main, .governance-flow-config { min-width: 0; }
+.governance-flow-config { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+.governance-flow-config h3 { font-size: 18px; margin: 0 0 16px; }
+.governance-flow-palette { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+.governance-flow-canvas { overflow: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--page-bg,#F3F8FE); max-height: 65vh; }
+.governance-flow-layout { position: relative; }
+.governance-flow-layout > svg { position: absolute; inset: 0; }
+.governance-flow-edge { color: var(--muted); }
+.governance-flow-edge path { fill: none; stroke: currentColor; stroke-width: 1.5; }
+.governance-flow-edge text { fill: currentColor; font-size: 13px; }
+.governance-flow-edge.bad { color: #ff4d4f; }
+.governance-flow-node { position: absolute; width: 216px; min-height: 88px; display: flex; flex-direction: column; gap: 8px; padding: 16px; text-align: left; border: 1px solid var(--border); background: white; color: var(--text); border-radius: 8px; cursor: pointer; font: inherit; }
+.governance-flow-node strong { font-size: 15px; }
+.governance-flow-node span, .governance-flow-node small { font-size: 13px; color: var(--muted); }
+.governance-flow-node.selected { border-color: #1677ff; background: #eaf4ff; }
+.governance-flow-node:focus-visible { outline: 2px solid #1677ff; outline-offset: 2px; }
+.governance-flow-node.quality { min-height: 104px; }
+.governance-flow-input-row { display: grid; grid-template-columns: minmax(0,1fr) minmax(100px,1fr); gap: 16px; margin-bottom: 16px; }
+.governance-flow-config .ant-select, .governance-flow-config .ant-input-number { width: 100%; }
+.governance-flow-config-row { border-top: 1px solid var(--border); padding-top: 16px; margin-top: 16px; }
+@media(max-width:1100px) { .governance-flow-workspace { grid-template-columns: minmax(0,1fr); } }
+
+.governance-flow-config { max-height: 65vh; overflow: auto; }
+.governance-editor-panel > summary { font-size: 18px; font-weight: 700; cursor: pointer; }
+.governance-editor-panel[open] > summary { margin-bottom: 24px; }
+.governance-flow-node span { overflow-wrap: anywhere; }
+.governance-flow-map { padding: 20px; border: 1px solid var(--border); border-radius: 8px; background: white; }
+.governance-flow-map h3 { font-size: 18px; margin: 0; }
+.governance-flow-identity { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; }
+.governance-flow-feedback { margin-bottom: 24px; }
+.governance-flow-config { max-height: 460px; }
+.governance-flow-config .governance-editor-panel { padding: 0; border: 0; margin-bottom: 16px; }
+.governance-flow-config .governance-editor-panel > .ant-space { display: flex; flex-direction: column; align-items: stretch; width: 100%; }
+.governance-flow-config .governance-editor-panel .ant-space-item { width: 100%; }
+.governance-workbench-items { max-height: 480px; overflow: auto; }
+@media(max-width:760px) { .governance-flow-map { padding: 16px; } }
+
+.governance-flow-canvas { height: 420px; overflow: hidden; }
+.governance-flow-canvas .governance-flow-node { position: static; }
+.governance-flow-canvas .react-flow__node { border: 0; padding: 0; }
+.governance-flow-canvas .react-flow__handle { width: 10px; height: 10px; background: #1677ff; border: 2px solid white; }
+.governance-flow-canvas .react-flow__controls { box-shadow: none; border: 1px solid var(--border); }
+.governance-flow-canvas .react-flow__controls-button { width: 32px; height: 32px; }
+.governance-flow-canvas .react-flow__edge-text { font-size: 13px; }
+.governance-flow-toolbox { margin-bottom: 16px; }
+.governance-flow-toolbox summary { cursor: pointer; font-size: 14px; color: var(--muted); margin-bottom: 16px; }
+.governance-flow-toolbox .ant-space { gap: 16px; }
+@media(max-width:760px) { .governance-flow-canvas { height: 360px; } }
+.governance-flow-description { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.governance-code-editor {min-width:0; margin-bottom:24px;}
+.governance-code-example {white-space:pre-wrap;overflow-wrap:anywhere;padding:16px;background:#f4f8ff;border-radius:8px;}
+.governance-flow-config .governance-editor-panel {margin-top:24px;}
+
+@media(min-width:1101px) { .governance-flow-workspace-code {grid-template-columns:minmax(0,1fr) minmax(420px, 45%);} }
+.governance-flow-workspace-code .governance-flow-config {max-height:620px;}
+
+.governance-flow-palette-group {display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px;}
+.governance-flow-palette-group > span {min-width:80px;}
+
+.governance-code-samples-grid {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;}
+.governance-code-samples-grid > section {min-width:0;margin-top:0;}
+.governance-code-changed {color:#0958d9;background:#e6f4ff;border-radius:4px;padding:2px 4px;}
+@media(max-width:760px){.governance-code-samples-grid{grid-template-columns:minmax(0,1fr);}}
+.governance-flow-canvas .react-flow__handle {width:24px;height:24px;border:0;background:transparent !important;}
+.governance-flow-canvas .react-flow__handle::after {content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:10px;height:10px;background:#1677ff;border:2px solid white;border-radius:50%;}
+.governance-flow-canvas .react-flow__handle[data-handleid="bad"]::after {background:#ff4d4f;}
+.governance-flow-canvas .react-flow__handle.connectingto::after,.governance-flow-canvas .react-flow__handle.valid::after {outline:2px solid #1677ff;outline-offset:2px;}
+
+/* Dataflow development uses the full page; other governance dialogs keep their layout. */
+.governance-dataflow-workbench {height:100dvh;min-height:0;overflow:hidden;}
+.governance-dataflow-workbench .workbench-main {min-height:0;}
+.governance-dataflow-workbench .workspace {display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+.governance-dataflow-workbench .breadcrumb {flex-shrink:0;}
+.governance-dataflows-page {display:flex;flex-direction:column;flex:1;min-height:0;min-width:0;}
+.governance-flow-shell {display:grid;grid-template-columns:280px minmax(0,1fr);gap:24px;flex:1;min-height:0;}
+.governance-flow-shell.list-collapsed {grid-template-columns:minmax(0,1fr);}
+.governance-flow-list {display:flex;flex-direction:column;gap:16px;min-width:0;min-height:0;padding:20px;background:white;border:1px solid var(--border);border-radius:8px;}
+.governance-flow-list h3,.governance-flow-page-header h3 {font-size:18px;font-weight:700;margin:0;}
+.governance-flow-list .governance-section-heading {margin-bottom:0;}
+.governance-flow-list-records {min-height:0;overflow:auto;flex:1;}
+.governance-flow-list-records ul {padding:0;margin:0;list-style:none;}
+.governance-flow-list-records li {padding:12px;border-bottom:1px solid var(--border);border-radius:4px;}
+.governance-flow-list-records li.selected {background:#eaf4ff;box-shadow:inset 3px 0 #1677ff;}
+.governance-flow-list-records .ant-btn-link {padding:0;height:auto;white-space:normal;text-align:left;justify-content:flex-start;max-width:100%;}
+.governance-flow-list-records .ant-btn-link > span {overflow-wrap:anywhere;}
+.governance-flow-list-records .helper-text {margin:4px 0 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.governance-flow-list-title {display:flex;align-items:center;gap:8px;min-width:0;}
+.governance-flow-list-title .ant-btn-link {flex:1;min-width:0;}
+.governance-flow-list-title .ant-btn-link > span {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;}
+.governance-flow-list-title .ant-tag {flex-shrink:0;margin:0;}
+.governance-flow-list-tags {display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.governance-flow-list-loading {display:flex;justify-content:center;padding:24px;}
+.governance-flow-list > .ant-pagination {flex-shrink:0;align-self:flex-end;}
+.governance-flow-page-panel {display:flex;flex-direction:column;min-width:0;min-height:0;background:white;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.governance-flow-page-header {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.governance-flow-page-header > div {min-width:0;}
+.governance-flow-page-header h3 {overflow-wrap:anywhere;}
+.governance-flow-page-header .helper-text {display:block;margin-top:4px;}
+.governance-flow-page-header > .ant-space {margin-left:auto;max-width:100%;}
+.governance-flow-page-body {flex:1;min-height:0;min-width:0;overflow:auto;padding:16px 20px;}
+.governance-flow-page-body.is-design {display:flex;flex-direction:column;}
+.governance-flow-page-body.is-design > :not(.governance-flow-design-content) {flex-shrink:0;}
+.governance-flow-page-body > :is(.ant-descriptions,.ant-alert,.ant-table-wrapper,.ant-form) + :is(.ant-descriptions,.ant-alert,.ant-table-wrapper,.ant-form) {margin-top:24px;}
+.governance-flow-documentation {margin-bottom:16px;}
+.governance-flow-documentation > summary,.governance-flow-definition-summary > summary {cursor:pointer;color:var(--muted);font-size:14px;}
+.governance-flow-documentation[open] > summary,.governance-flow-definition-summary[open] > summary {margin-bottom:16px;}
+.governance-flow-design-content {display:flex;flex-direction:column;flex:1;min-height:0;}
+.governance-flow-design-content > :not(.governance-flow-workspace) {flex-shrink:0;}
+.governance-flow-design-content .governance-flow-identity {margin-bottom:16px;}
+.governance-flow-definition-summary {margin-bottom:16px;}
+.governance-flow-design-content > .ant-form > .governance-editor-panel {margin-bottom:16px;}
+.governance-dataflows-page .governance-flow-workspace {grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:stretch;flex:1;min-height:360px;margin-bottom:0;}
+.governance-dataflows-page .governance-flow-workspace-code {grid-template-columns:minmax(0,1fr) 420px;}
+.governance-dataflows-page .governance-flow-workspace.config-collapsed {grid-template-columns:minmax(0,1fr);}
+.governance-dataflows-page .governance-flow-map {display:flex;flex-direction:column;min-height:0;padding:16px;}
+.governance-dataflows-page .governance-flow-map > .governance-section-heading {flex-shrink:0;flex-wrap:wrap;}
+.governance-dataflows-page .governance-flow-toolbox {flex-shrink:0;max-height:240px;overflow:auto;}
+.governance-dataflows-page .governance-flow-canvas {flex:1;height:auto;min-height:240px;max-height:none;}
+.governance-dataflows-page .governance-flow-config {height:100%;max-height:none;min-height:0;overflow:auto;padding:16px;}
+.governance-dataflows-page .governance-flow-feedback {max-height:120px;overflow:auto;margin-bottom:16px;}
+.governance-flow-execution-note {flex-shrink:0;margin-top:16px;}
+.governance-flow-execution-note > summary {cursor:pointer;font-size:13px;color:var(--muted);}
+.governance-flow-execution-note > p {margin:8px 0 0;}
+.governance-flow-page-footer {display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:16px;padding:16px 20px;border-top:1px solid var(--border);flex-shrink:0;background:white;}
+.governance-flow-empty {margin:auto;max-width:640px;padding:24px;color:var(--muted);}
+.governance-flow-empty h3 {font-size:18px;}
+@media(max-width:1100px){
+ .governance-flow-shell {grid-template-columns:240px minmax(0,1fr);gap:16px;}
+ .governance-flow-shell.list-collapsed {grid-template-columns:minmax(0,1fr);}
+ .governance-dataflows-page .governance-flow-workspace:not(.config-collapsed) {grid-template-columns:minmax(0,1fr);min-height:640px;}
+ .governance-dataflows-page .governance-flow-workspace:not(.config-collapsed) .governance-flow-config {height:320px;}
+}
+@media(max-width:760px){
+ .governance-dataflow-workbench {height:auto;min-height:100dvh;overflow:visible;}
+ .governance-dataflow-workbench .workspace {overflow:visible;}
+ .governance-flow-shell,.governance-flow-shell.list-collapsed {display:flex;flex-direction:column;flex:none;gap:16px;}
+ .governance-flow-page-panel {min-height:720px;}
+ .governance-flow-shell.list-collapsed {grid-template-rows:minmax(0,1fr);}
+ .governance-flow-list {padding:16px;gap:12px;height:300px;flex-shrink:0;}
+ .governance-flow-list-records li {padding:12px;}
+ .governance-flow-page-header,.governance-flow-page-body,.governance-flow-page-footer {padding:16px;}
+ .governance-flow-page-header {flex-wrap:wrap;}
+ .governance-flow-page-body {max-height:70dvh;}
+ .governance-flow-page-body.is-design {display:block;}
+ .governance-flow-page-footer {position:sticky;bottom:0;z-index:2;}
+ .governance-flow-design-content {min-height:480px;}
+ .governance-dataflows-page .governance-flow-workspace.config-collapsed {min-height:360px;}
+}
+
+.governance-flow-source-browser {margin:24px 0;display:flex;flex-direction:column;gap:12px;min-width:0;}
+.governance-flow-source-pagination {display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;}
+.governance-flow-source-pagination > .helper-text {white-space:nowrap;}
+.governance-flow-source-pagination .ant-pagination {flex-shrink:0;margin:0;}
+.governance-flow-config h3 {overflow-wrap:anywhere;}
+.governance-flow-config .ant-checkbox-group {display:flex;flex-direction:column;gap:8px;}
+.governance-flow-config .ant-checkbox-wrapper {overflow-wrap:anywhere;}
+
+.governance-flow-detail-heading {display:flex;align-items:center;gap:16px;margin-bottom:24px;}
+.governance-flow-detail-heading h3 {margin:0;}
+
+.governance-flow-node strong,.governance-flow-node > span {max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.governance-flow-config .ant-descriptions-item-content {overflow-wrap:anywhere;}
+
+.governance-flow-header-identity {max-width:100%;}
+.governance-flow-name-form .ant-form-item {margin:0;max-width:100%;}
+.governance-flow-name-form .ant-form-item-control {min-width:0;}
+.governance-flow-name-form .ant-input {width:280px;max-width:100%;}
+.governance-flow-basic-owners {display:flex;flex-direction:column;gap:0;}
+.governance-business-flow {overflow:auto;min-height:0;}
+.governance-business-intro {margin:0 0 24px;color:var(--muted);font-size:15px;}
+.governance-business-complex {padding:12px 16px;background:var(--page-bg,#F3F8FE);border-radius:8px;margin:0 0 24px;}
+.governance-business-stepper {margin-bottom:24px;overflow-x:auto;}
+.governance-business-stepper .ant-steps-item-title {white-space:nowrap;}
+.governance-business-stage {margin-bottom:0;}
+.governance-business-stage-heading {display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px 16px;margin-bottom:12px;}
+.governance-business-stage-heading h3 {font-size:18px;margin:0;}
+.governance-business-stage-heading p {grid-column:1 / -1;margin:0;}
+.governance-business-stage ol {list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}
+.governance-business-step {font:inherit;display:flex;flex-direction:column;align-items:flex-start;gap:8px;width:100%;padding:16px;text-align:left;background:white;border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;overflow-wrap:anywhere;}
+.governance-business-step.selected {background:#eaf4ff;border-color:#1677ff;}
+.governance-business-step:hover {border-color:#1677ff;}
+.governance-business-step:focus-visible {outline:2px solid #1677ff;outline-offset:2px;}
+.governance-business-step strong {font-size:15px;}
+.governance-business-step span,.governance-business-step small {font-size:13px;color:var(--muted);}
+.governance-business-empty {margin:0;padding:12px 0;}
+.governance-flow-source-details {margin-bottom:24px;}
+.governance-flow-source-details > summary {cursor:pointer;color:var(--muted);font-size:13px;}
+.governance-flow-source-details[open] > summary {margin-bottom:16px;}
+.governance-dataflows-page .governance-flow-workspace.is-business {grid-template-columns:minmax(0,1fr) minmax(340px,45%);}
+.governance-dataflows-page .governance-flow-workspace.is-business.config-collapsed {grid-template-columns:minmax(0,1fr);}
+@media(max-width:1100px){
+ .governance-dataflows-page .governance-flow-workspace.is-business {grid-template-columns:minmax(0,1fr);}
+ .governance-dataflows-page .is-business .governance-business-flow {max-height:480px;}
+}
+@media(max-width:760px){
+ .governance-flow-page-body.is-business-design {max-height:none;overflow:visible;}
+ .governance-dataflows-page .governance-flow-workspace.is-business {min-height:0;}
+ .governance-dataflows-page .is-business .governance-business-flow {max-height:none;overflow:visible;}
+ .governance-dataflows-page .governance-flow-workspace.is-business .governance-flow-config {height:auto;overflow:visible;}
+}
+@media(max-width:760px){
+ .governance-flow-header-identity,.governance-flow-name-form,.governance-flow-name-form .ant-form-item {width:100%;}
+ .governance-flow-name-form .ant-input {width:100%;}
+}
+
+/* Business editing has one vertical scroll owner; graph tools retain their canvas. */
+.governance-flow-page-body.is-business-design {display:block;overflow:auto;}
+.is-business-design .governance-flow-design-content {display:block;min-height:0;}
+.governance-dataflows-page .is-business-design .governance-flow-workspace.is-business {flex:none;min-height:0;align-items:start;}
+.governance-dataflows-page .is-business .governance-business-flow {max-height:none;overflow:visible;}
+.governance-dataflows-page .is-business .governance-flow-config {height:auto;max-height:none;overflow:visible;}
+.is-business .governance-business-stepper {margin-bottom:16px;}
+.is-business .governance-business-intro {margin-bottom:16px;font-size:13px;}
+@media(max-width:1400px){
+ .governance-dataflows-page .governance-flow-workspace.is-business {grid-template-columns:minmax(0,1fr);}
+}
+@media(max-width:760px){
+ .governance-flow-page-body.is-business-design {overflow:visible;}
+}
+
+@media(max-width:760px){
+ .governance-flow-page-panel {padding-bottom:var(--governance-footer-height,0px);}
+ .governance-flow-page-footer {position:fixed;left:16px;right:16px;bottom:0;z-index:3;padding-bottom:calc(16px + env(safe-area-inset-bottom));}
+}
+
+.governance-flow-node-summary { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.governance-flow-canvas .governance-flow-node { min-height: 136px; height: 136px; }
+.governance-flow-canvas .governance-flow-node > strong, .governance-flow-canvas .governance-flow-node > small { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+.governance-selected-node-summary, .governance-business-step > span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }

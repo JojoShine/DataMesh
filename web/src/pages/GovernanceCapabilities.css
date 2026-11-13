@@ -1,0 +1,7 @@
+.governance-expansion-form .governance-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; align-items: start; }
+.governance-expansion-form .governance-form-grid > * { min-width: 0; }
+.governance-expansion-form .ant-input-number { width: 100%; }
+.governance-expansion-form .governance-control-section { padding-top: 24px; margin-top: 24px; border-top: 1px solid var(--border); }
+.governance-expansion-form .governance-control-section > h3 { margin: 0 0 16px; }
+.governance-expansion-form .ant-alert + .ant-form-item { margin-top: 24px; }
+@media(max-width: 760px) { .governance-expansion-form .governance-form-grid { grid-template-columns: minmax(0, 1fr); } }

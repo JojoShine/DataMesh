@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "$id": "urn:datamesh:resource:v1",
+  "additionalProperties": false,
+  "required": [
+    "resource_type",
+    "resource_id",
+    "contract_version"
+  ],
+  "properties": {
+    "resource_type": {
+      "enum": [
+        "raw_object",
+        "governed_dataset",
+        "table_resource",
+        "file_resource",
+        "api_resource"
+      ]
+    },
+    "resource_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "contract_version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  }
+}

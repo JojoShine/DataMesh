@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "$id": "urn:datamesh:event:v1",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "source_id",
+    "object_id",
+    "run_id",
+    "op",
+    "key",
+    "source_position",
+    "source_order",
+    "ordering_guarantee",
+    "schema_version",
+    "captured_at",
+    "before",
+    "after",
+    "trace_id"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "object_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "op": {
+      "enum": [
+        "snapshot",
+        "create",
+        "update",
+        "delete"
+      ]
+    },
+    "key": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": [
+          "string",
+          "integer",
+          "boolean"
+        ]
+      }
+    },
+    "source_position": {
+      "type": "object",
+      "minProperties": 1
+    },
+    "source_order": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scope",
+            "value"
+          ],
+          "properties": {
+            "scope": {
+              "type": "string",
+              "minLength": 1
+            },
+            "value": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "ordering_guarantee": {
+      "enum": [
+        "source_order",
+        "per_key_arrival"
+      ]
+    },
+    "schema_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "captured_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "before": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "after": {
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "op": {
+            "const": "delete"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "after": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "after": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "source_order": {
+            "type": "null"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "ordering_guarantee": {
+            "const": "per_key_arrival"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "ordering_guarantee": {
+            "const": "source_order"
+          }
+        }
+      }
+    }
+  ]
+}

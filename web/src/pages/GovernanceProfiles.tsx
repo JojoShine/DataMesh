@@ -1,0 +1,54 @@
+import {useGovernanceWorkspace} from "../components/GovernanceWorkspaceContext";
+import {usePagination} from "../hooks/usePagination";
+import {governanceFieldLabel} from "../api/governanceFieldLabels";
+import {governanceFieldTooltip} from "../components/GovernanceFieldHelp";
+import {GovernanceDialogActions} from "../components/GovernanceDialog";
+import {Alert,App,Button,Checkbox,Input,Col,Descriptions,Form,InputNumber,Row,Select,Space,Table,Tag} from "antd";
+import {useEffect,useState} from "react";
+import type {Page} from "../api/types";
+import type {GovernanceProfileRun as GovernanceRun,GovernanceRunEvent,MetadataResource,ProfileField} from "../api/governance";
+import {governanceRunCodes} from "../api/governance";
+import {errorMessage} from "../api/client";
+import {useQuery} from "../hooks/useQuery";
+import {useAction} from "../hooks/useAction";
+import {Failure,Stamp,Status} from "../components/common";
+
+export function ProfileResult({run,labels={}}:{run:GovernanceRun;labels?:Record<string,string>}){
+ const {navigation:navigate}=useGovernanceWorkspace();
+ const report=run.result;if(!report)return null;
+ return <div className="detail-section"><h3>数据情况报告</h3><Alert showIcon type={report.coverage==="full"?"success":"info"} title={`${report.coverage==="full"?"全量":"采样"}覆盖：${report.rows.toLocaleString()} / ${report.total_rows.toLocaleString()} 行`} description={report.mode==="sample"?"采样读取来源顺序中的前若干行，不是随机样本，统计不代表全库。敏感字段仅显示空值数量。":"已覆盖本次一致读取范围；来源后续变化不包含在本报告中。敏感字段仅显示空值数量。"}/>
+ <Table<ProfileField> className="section-gap" rowKey="name" dataSource={report.fields} pagination={false} scroll={{x:800}} columns={[{title:"字段（中文 / 英文）",render:(_,f)=>governanceFieldLabel({...f,business_name:labels[f.name]})},{title:"空值",dataIndex:"null_count"},{title:"不同值",render:(_,r)=>r.distinct_count??"—"},{title:"重复值行数",render:(_,r)=>r.duplicate_count??"—"},{title:"最小值",render:(_,r)=>r.min??"—"},{title:"最大值",render:(_,r)=>r.max??"—"},{title:"范围",render:(_,r)=>r.redacted?<Tag>敏感统计已隐藏</Tag>:r.values_truncated?<Tag>长值已截断</Tag>:<Tag>可查看分布</Tag>}]} expandable={{rowExpandable:r=>!r.redacted,expandedRowRender:field=><Table rowKey={(r)=>r.value+String(r.count)} size="small" dataSource={field.frequencies} pagination={false} columns={[{title:"高频值（最多 10 项）",dataIndex:"value"},{title:"出现行数",dataIndex:"count"},{title:"显示",render:(_,r)=>r.truncated?"已截断":"完整"}]}/>}}/>
+ {report.business_time_status&&<p className="helper-text">业务时间依据：{report.business_time_status==="verified"?report.business_time:"无法核实"}；以实际字段值为准，不使用读取成功时间代替。</p>}
+ {report.standard_audit&&<section className="detail-section"><h3>固定标准核验</h3><p>实际核验 {report.standard_audit.rows.toLocaleString()} 行，不符合标准 {report.standard_audit.rejected_rows.toLocaleString()} 行。</p><Table rowKey="field" dataSource={report.standard_audit.fields} pagination={false} scroll={{x:750}} columns={[{title:"字段",dataIndex:"field"},{title:"固定标准",render:(_,row)=>`${row.name} · v${row.standard.version}`},{title:"核验结论",render:(_,row)=>row.status==="redacted"?"敏感字段无法明文核实":`违规 ${row.violations} 行`},{title:"示例行号（最多20个）",render:(_,row)=>row.ordinals.join("、")||"无"}]}/>{report.mode==="full"&&report.standard_audit.rejected_rows>0&&<GovernanceDialogActions><Button onClick={()=>navigate(`/platform/governance/issues?action=create&run_id=${encodeURIComponent(run.id)}`)}>登记整改</Button></GovernanceDialogActions>}</section>}
+ {report.anomalies.length>0&&<div className="detail-section"><h3>异常定位样本</h3><p className="muted">最多展示 20 个重复值或非空约束异常的行序号，不展示记录值。</p><Table rowKey={r=>r.field+":"+r.ordinal} dataSource={report.anomalies} pagination={false} columns={[{title:"字段（中文 / 英文）",render:(_,f)=>governanceFieldLabel({name:f.field,business_name:labels[f.field]})},{title:"本次观察行序号",dataIndex:"ordinal"},{title:"问题",render:(_,r)=>r.code==="duplicate_value"?"字段值重复":"非空字段出现空值"}]}/></div>}
+ </div>
+}
+export function GovernanceProfiles({object,active:visible=true,onBusyChange}:{object:MetadataResource;active?:boolean;onBusyChange?:(busy:boolean)=>void}){
+ const {message}=App.useApp();const action=useAction();const [page,setPage,pagePagination]=usePagination();const [selected,setSelected]=useState<string|null>(null);const [mode,setMode]=useState<"sample"|"full">("sample");
+ const available=object.resource_type==="raw_object"||(!object.resource_type)||object.resource_type==="table_resource"&&(object.adapter==="database"||object.adapter==="excel"||object.adapter==="browser_example")||object.resource_type==="governed_dataset"||object.resource_type==="api_resource"||object.resource_type==="file_resource"&&Boolean(object.structured_input);
+ const list=useQuery<Page<GovernanceRun>>(available?`/api/v1/governance/runs?resource_id=${encodeURIComponent(object.object_id)}&page=${page}&page_size=${pagePagination.pageSize}`:null,true);
+ const detail=useQuery<GovernanceRun>(selected?`/api/v1/governance/runs/${selected}`:null,true);
+ const events=useQuery<Page<GovernanceRunEvent>>(selected?`/api/v1/governance/runs/${selected}/events`:null,true);
+ useEffect(()=>{onBusyChange?.(visible&&action.busy);return()=>onBusyChange?.(false)},[visible,action.busy,onBusyChange]);
+ const run=detail.data;const active=run?.state==="queued"||run?.state==="running";
+ useEffect(()=>{if(!active||!visible)return;const timer=window.setInterval(()=>{if(!document.hidden){detail.reload();events.reload()}},1500);return()=>window.clearInterval(timer)},[active,selected,visible]);
+ async function start(value:{fields:string[];sample_rows?:number;parameters?:Record<string,string>}){
+  try{const run=await action.run<GovernanceRun>("/api/v1/governance/profiles",{resource:{resource_type:object.resource_type??"raw_object",resource_id:object.object_id,contract_version:object.schema_version},fields:value.fields,...(value.parameters?{parameters:value.parameters}:{}),mode,...(mode==="sample"?{sample_rows:value.sample_rows??1000}:{})});setSelected(run.id);setPage(1);list.reload();message.success("数据情况检查已排队，完成后可查看报告")}
+  catch(error){message.error(errorMessage(error))}
+ }
+ async function control(kind:"cancel"|"retry"){
+  if(!run)return;try{const next=await action.run<GovernanceRun>(`/api/v1/governance/runs/${run.id}/${kind}`,{});setSelected(next.id);detail.reload();events.reload();list.reload();message.success(kind==="cancel"?"已请求取消":"已建立新的数据检查，将重新读取来源")}
+  catch(error){message.error(errorMessage(error))}
+ }
+ if(!available)return <div className="governance-editor-panel"><h3>这份数据有没有缺失或重复</h3><Alert type="info" showIcon title="这份资源目前只登记了说明，还不能按行检查" description="检查缺失值、重复值需要能按行读取数据。数据库表、Excel导入表、已配置读取方式的CSV/XLSX和查询API可检查；PDF等文档不能按字段统计。"/></div>;
+ return <div className="governance-editor-panel"><h3>这份数据有没有缺失或重复</h3><p className="muted">查看字段缺失、重复情况及数值分布，为模型约束和质量规则提供依据。需要有效的加工授权；检查不会修改或清洗数据，敏感值不进入报告。</p>
+ {selected?<><Space size={16} wrap><GovernanceDialogActions visible={visible}><Button onClick={()=>{setSelected(null);list.reload()}}>返回检查记录</Button></GovernanceDialogActions><GovernanceDialogActions visible={visible}><Button onClick={()=>{detail.reload();events.reload()}}>刷新检查结果</Button></GovernanceDialogActions>{active&&<GovernanceDialogActions visible={visible}><Button disabled={action.busy||action.readOnly||run?.cancel_requested} onClick={()=>control("cancel")}>取消本次检查</Button></GovernanceDialogActions>}{run&&["failed","cancelled","interrupted"].includes(run.state)&&<GovernanceDialogActions visible={visible}><Button disabled={action.busy||action.readOnly} onClick={()=>control("retry")}>重新检查</Button></GovernanceDialogActions>}</Space>
+ {detail.error?<Failure error={detail.error} retry={detail.reload}/>:run&&<><Descriptions className="detail-section" items={[{key:"state",label:"检查状态",children:<Status value={run.state}/>},{key:"count",label:"已处理",children:`${run.processed.toLocaleString()} 行`},{key:"start",label:"开始于",children:<Stamp value={run.started_at??undefined}/>},{key:"finish",label:"完成于",children:<Stamp value={run.finished_at??undefined}/>}]}/>{run.error_code&&<Alert showIcon type={run.state==="cancelled"?"info":"warning"} title={governanceRunCodes[run.error_code]??"运行未完成"} description={run.state==="interrupted"?"原读取快照已经失效。重新检查会创建新运行，不会把两次读取混为同一份报告。":undefined}/>}<ProfileResult run={run} labels={object.field_labels}/></>}
+ <div className="detail-section"><h3>执行日志</h3>{events.error?<Failure error={events.error} retry={events.reload}/>:<Table rowKey="id" dataSource={events.data?.items} loading={events.loading} pagination={false} columns={[{title:"时间",render:(_,r)=><Stamp value={r.created_at}/>},{title:"事件",render:(_,r)=>governanceRunCodes[r.code]??r.code},{title:"已处理行数",dataIndex:"processed"}]}/>}</div>
+ </>:<><Form id="dialog-governanceprofiles-0" layout="vertical" initialValues={{fields:object.fields.filter(f=>f.logical_type!=="unsupported").map(f=>f.name),sample_rows:1000}} onFinish={start} disabled={action.busy||action.readOnly}>
+ <Row gutter={16}><Col xs={24} md={12}><Form.Item label="检查多少数据" tooltip={governanceFieldTooltip("观察范围")}><Select aria-label="检查多少数据" placeholder="请选择检查部分或全部数据" value={mode} onChange={setMode} options={[{value:"sample",label:"检查部分数据"},{value:"full",label:"检查全部数据"}]}/></Form.Item></Col>{mode==="sample"&&<Col xs={24} md={12}><Form.Item label="本次检查行数" tooltip={governanceFieldTooltip("采样行数")} name="sample_rows" rules={[{required:true,type:"number",min:1,max:10000}]}><InputNumber placeholder="请输入采样行数（1–10,000）" min={1} max={10000}/></Form.Item></Col>}</Row>
+ {object.input_parameters?.map(parameter=><Form.Item key={parameter.name} name={["parameters",parameter.name]} label={`查询参数 · ${parameter.name}`} tooltip={governanceFieldTooltip("查询参数")} rules={[{required:parameter.required}]}><Input placeholder="请输入已声明的业务查询参数，不填写凭据" maxLength={4000}/></Form.Item>)}<Form.Item label="要检查哪些字段" tooltip={governanceFieldTooltip("观察字段")} name="fields" rules={[{required:true,type:"array",min:1}]}><Checkbox.Group options={object.fields.map(f=>({label:governanceFieldLabel({...f,business_name:object.field_labels?.[f.name]})+(f.sensitive?"（敏感）":"")+(f.logical_type==="unsupported"?"（暂不支持）":""),value:f.name,disabled:f.logical_type==="unsupported"}))}/></Form.Item><GovernanceDialogActions visible={visible}><Button form="dialog-governanceprofiles-0" type="primary" htmlType="submit" loading={action.busy}>检查数据情况</Button></GovernanceDialogActions></Form>
+ <div className="detail-section"><h3>以前的数据检查</h3>{list.error?<Failure error={list.error} retry={list.reload}/>:<Table<GovernanceRun> rowKey="id" dataSource={list.data?.items} loading={list.loading} pagination={{...pagePagination,total:list.data?.total}} columns={[{title:"建立时间",render:(_,r)=><Stamp value={r.created_at}/>},{title:"范围",render:(_,r)=>r.definition.mode==="full"?"全量":"采样"},{title:"状态",render:(_,r)=><Status value={r.state}/>},{title:"已处理行数",dataIndex:"processed"},{title:"操作",render:(_,r)=><Button type="link" onClick={()=>setSelected(r.id)}>查看检查报告</Button>}]}/>}</div>
+ </>}
+ </div>
+}

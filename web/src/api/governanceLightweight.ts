@@ -1,0 +1,8 @@
+import type {GovernanceDataflow,GovernanceFlowExecution,MetadataResource} from "./governance";
+import type {Field} from "./types";
+export const lightweightBase="/api/v1/lightweight-governance";
+export interface LightweightFile {file_id:string;name:string;size:number;rows:number;fields:Field[];field_labels:Record<string,string>;version:1}
+export interface LightweightUnit {id:string;name:string;version:number;graph:GovernanceDataflow;files:LightweightFile[];created_at:string;updated_at:string}
+export interface LightweightRejection {node_id:string;ordinal:number;data:Record<string,unknown>;violations:string[]}
+export function lightweightResources(files:LightweightFile[]):Record<string,MetadataResource>{return Object.fromEntries(files.map(file=>[file.file_id,{object_id:file.file_id,source_id:"",qualified_name:file.name,display_name:file.name,schema_version:file.version,resource_type:"file_resource",fields:file.fields.map(field=>({...field,business_name:file.field_labels[field.name]??field.business_name})),field_labels:file.field_labels}]))}
+export function lightweightRunResources(execution:GovernanceFlowExecution):Record<string,MetadataResource>{return Object.fromEntries(Object.values(execution.inputs).map(input=>[input.resource.resource_id,{object_id:input.resource.resource_id,source_id:"",qualified_name:input.source_name??input.upload_id??input.resource.resource_id,display_name:input.source_name,schema_version:input.resource.contract_version,resource_type:"file_resource",fields:input.fields.map(field=>({...field,business_name:input.field_labels?.[field.name]??field.business_name})),field_labels:input.field_labels}]))}

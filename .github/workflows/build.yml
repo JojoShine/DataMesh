@@ -1,0 +1,45 @@
+name: Verify native production candidate
+on:
+  workflow_call:
+    inputs:
+      publish:
+        type: boolean
+        required: true
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22.22.0'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Verify locked frontend and deployment tooling
+        run: |
+          npm --prefix web ci
+          npm --prefix web test -- --maxWorkers=1 --no-file-parallelism
+          BASE_PATH=/datamesh npm --prefix web run build
+          python3 -m unittest discover -s tests/tooling
+      - name: Build and verify exact native images
+        env:
+          PUBLISH_CANDIDATE: ${{ inputs.publish }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$PUBLISH_CANDIDATE" = "true" ]; then
+            python3 scripts/ci_production.py --publish
+          else
+            python3 scripts/ci_production.py
+          fi
+      - name: Preserve verified candidate deployment artifacts
+        if: inputs.publish
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: candidate-${{ github.sha }}
+          path: artifacts/production/
+          if-no-files-found: error
+          retention-days: 90
+          include-hidden-files: true

@@ -1,0 +1,15 @@
+.governance-node-description { display: flex; flex-direction: column; gap: 8px; min-width: 0; overflow-wrap: anywhere; }
+.governance-node-description .ant-typography,
+.ant-table .governance-node-description .ant-typography { margin: 0; font-size: 13px; color: var(--muted); }
+.governance-node-description > .helper-text { margin: 0; }
+.governance-quality-run-summary { display: flex; flex-direction: column; gap: 24px; }
+.governance-quality-run-summary > :is(h3, p) { margin: 0; }
+.governance-run-view > .governance-quality-run-summary + .ant-tabs { margin-top: 24px; }
+
+.governance-detail-stack { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.governance-detail-stack > .detail-section { margin-top: 0; }
+.governance-detail-stack > :is(h3, p) { margin: 0; }
+.governance-node-description details > summary { cursor: pointer; color: var(--ant-color-primary, #1677ff); }
+.governance-node-description details[open] > summary { margin-bottom: 16px; }
+
+.governance-editor-panel > .governance-node-rules { margin-bottom: 24px; }

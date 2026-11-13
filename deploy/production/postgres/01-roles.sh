@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+PG_MIGRATION_PASSWORD=$(cat "$MIGRATION_DB_PASSWORD_FILE")
+PG_APP_PASSWORD=$(cat "$APP_DB_PASSWORD_FILE")
+export PG_MIGRATION_PASSWORD PG_APP_PASSWORD
+psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --set=ON_ERROR_STOP=1 <<'SQL'
+\getenv migration_password PG_MIGRATION_PASSWORD
+\getenv application_password PG_APP_PASSWORD
+CREATE ROLE datamesh_owner LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD :'migration_password';
+CREATE ROLE datamesh_app LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD :'application_password';
+ALTER DATABASE datamesh OWNER TO datamesh_owner;
+GRANT CONNECT ON DATABASE datamesh TO datamesh_app;
+GRANT USAGE ON SCHEMA public TO datamesh_app;
+SQL
+unset PG_MIGRATION_PASSWORD PG_APP_PASSWORD

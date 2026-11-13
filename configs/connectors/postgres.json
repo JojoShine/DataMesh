@@ -1,0 +1,23 @@
+{
+  "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+  "tasks.max": "1",
+  "database.hostname": "postgres-source",
+  "database.port": "5432",
+  "database.user": "datamesh_cdc",
+  "database.password": "${SOURCE_CDC_PASSWORD}",
+  "topic.prefix": "datamesh_postgres",
+  "table.include.list": "public.customers",
+  "snapshot.mode": "initial",
+  "decimal.handling.mode": "string",
+  "tombstones.on.delete": "false",
+  "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "key.converter.schemas.enable": "false",
+  "value.converter.schemas.enable": "false",
+  "database.dbname": "sample",
+  "plugin.name": "pgoutput",
+  "slot.name": "datamesh_slot",
+  "publication.name": "datamesh_publication",
+  "publication.autocreate.mode": "disabled",
+  "snapshot.fetch.size": "100"
+}

@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:datamesh:mountinput:v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "directory_id",
+    "resource",
+    "mapping"
+  ],
+  "properties": {
+    "directory_id": {
+      "type": "string"
+    },
+    "resource": {
+      "$ref": "#/$defs/Resource"
+    },
+    "mapping": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "expected_version": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "$defs": {
+    "Resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resource_type",
+        "resource_id",
+        "contract_version"
+      ],
+      "properties": {
+        "resource_type": {
+          "enum": [
+            "raw_object",
+            "governed_dataset",
+            "table_resource",
+            "file_resource",
+            "api_resource"
+          ]
+        },
+        "resource_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "contract_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "resource": {
+            "properties": {
+              "resource_type": {
+                "const": "file_resource"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "mapping": {
+            "maxProperties": 0
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "mapping": {
+            "minProperties": 1
+          }
+        }
+      }
+    }
+  ]
+}

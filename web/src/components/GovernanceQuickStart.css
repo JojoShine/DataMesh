@@ -1,0 +1,12 @@
+.governance-quick-start { min-width:0; margin-bottom:24px; padding:20px; background:#fff; border:1px solid var(--border,#DCE6F3); border-radius:8px; font-size:15px; line-height:1.7; }
+.governance-quick-start-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:16px; }
+.governance-quick-start h2,.governance-quick-start h3 { margin:0 0 8px; font-size:18px; font-weight:700; }
+.governance-quick-start-heading p { margin:0; color:var(--muted,#60749A); }
+.governance-quick-start a { font-size:14px; color:var(--accent,#1677FF); }
+.governance-recipe-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; }
+.governance-recipe { min-width:0; display:flex; flex-direction:column; }
+.governance-recipe ol { padding-left:22px; margin:0 0 16px; }
+.governance-recipe li+li { margin-top:8px; }
+.governance-recipe-links { display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:auto; }
+.governance-quick-start-note { margin:24px 0 0; font-size:13px; color:var(--muted,#60749A); }
+@media(max-width:1100px) { .governance-recipe-grid { grid-template-columns:1fr; } .governance-recipe+.governance-recipe { padding-top:24px; border-top:1px solid var(--border,#DCE6F3); } }

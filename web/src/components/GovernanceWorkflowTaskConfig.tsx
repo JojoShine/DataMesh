@@ -1,0 +1,19 @@
+import {governanceFieldTooltip} from "./GovernanceFieldHelp";
+import {Form,InputNumber,Select} from "antd";
+import type {GovernanceRecord,GovernanceWorkflowTask} from "../api/governance";
+import {useQuery} from "../hooks/useQuery";
+import {Failure} from "./common";
+import {GovernanceReferenceSelect} from "./GovernanceReferenceSelect";
+import {GovernanceRunParameters,governanceParameterDefaults,type GovernanceParameterValues} from "./GovernanceRunParameters";
+
+import {GovernanceWorkflowTaskSummary,GovernanceWorkflowFlowDetails,governanceTaskNames} from "./GovernanceWorkflowTaskSummary";
+export {governanceTaskNames} from "./GovernanceWorkflowTaskSummary";
+import {GovernanceNodeLabel} from "./GovernanceNodeLabel";
+import {useGovernanceFlowNodeContext} from "../hooks/useGovernanceRunNodeContext";
+export function GovernanceWorkflowTaskConfig({task,tasks,department,onChange,parameters,onParameters}:{task:GovernanceWorkflowTask;tasks:GovernanceWorkflowTask[];department:string;onChange:(value:Partial<GovernanceWorkflowTask>)=>void;parameters:GovernanceParameterValues;onParameters:(values:GovernanceParameterValues)=>void}){
+ const kind=task.kind??"dataflow";const flow=useQuery<GovernanceRecord>(kind==="dataflow"&&task.dataflow.id?`/api/v1/governance/dataflows/${task.dataflow.id}/versions/${task.dataflow.version}`:null);const graph=flow.data?.definition?.dataflow;
+ const {context,errors}=useGovernanceFlowNodeContext(flow.data);
+ const candidates=tasks.filter(other=>other.id!==task.id&&(other.kind??"dataflow")==="dataflow"&&other.id).map(other=>({value:other.id,label:<GovernanceWorkflowTaskSummary task={other} tasks={tasks} compact/>}));
+ const depend=(id:string)=>[...new Set([...(task.depends_on??[]),id])];
+ return <><Form.Item label="任务类型" tooltip={governanceFieldTooltip("任务类型")}><Select placeholder="请选择任务类型" value={kind} options={Object.entries(governanceTaskNames).map(([value,label])=>({value,label}))} onChange={kind=>onChange({kind,dataflow:{id:"",version:kind==="dataflow"?1:0},inputs:undefined,input_task:undefined,max_failure_rate:undefined})}/></Form.Item>{kind==="dataflow"?<><Form.Item label="执行数据流版本" tooltip={governanceFieldTooltip("执行数据流版本")}><GovernanceReferenceSelect kind="dataflow" executionMode="batch" value={task.dataflow.id?task.dataflow:undefined} departmentId={department} onChange={dataflow=>onChange({dataflow:dataflow??{id:"",version:1},inputs:undefined})}/></Form.Item>{errors.length>0&&<Failure error={errors[0]}/>}<GovernanceWorkflowFlowDetails task={task} tasks={tasks} context={context}/>{flow.error?<Failure error={flow.error}/>:graph&&<>{graph.nodes.filter(node=>node.kind==="source").map(node=><Form.Item key={node.id} label={<div><GovernanceNodeLabel id={node.id} context={context}/><span>前置成果输入（可选）</span></div>} tooltip={governanceFieldTooltip("前置成果输入")}><Select allowClear placeholder="留空使用原来源；或选择前置任务的成果" value={task.inputs?.[node.id]} options={candidates} onChange={id=>{const inputs={...task.inputs};if(id)inputs[node.id]=id;else delete inputs[node.id];onChange({inputs,...(id?{depends_on:depend(id)}:{})})}}/></Form.Item>)}<GovernanceRunParameters defaults={governanceParameterDefaults(graph)} value={parameters} onChange={value=>onParameters({...governanceParameterDefaults(graph),...parameters,...value})}/></>}</>:<><Form.Item label="待检查或发布的前置成果" tooltip={governanceFieldTooltip("待检查或发布的前置成果")}><Select placeholder="请选择数据流任务" value={task.input_task} options={candidates} onChange={id=>onChange({input_task:id,depends_on:depend(id)})}/></Form.Item>{kind==="quality_check"&&<Form.Item label="允许隔离比例（0–1）" tooltip={governanceFieldTooltip("允许隔离比例（0–1）")}><InputNumber min={0} max={1} step={0.01} value={task.max_failure_rate??0} placeholder="请输入允许隔离比例" onChange={value=>onChange({max_failure_rate:value??0})}/></Form.Item>}{kind==="publish_approval"&&<p className="helper-text">任务等待另一位有资产发布职责的人员在发布管理中核验；审批时重新检查来源、质量与成果共享依据。</p>}</>}</>;
+}

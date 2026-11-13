@@ -1,0 +1,26 @@
+name: Production CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: datamesh-ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  pull-request:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/build.yml
+    with:
+      publish: false
+    permissions:
+      contents: read
+  main-candidate:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/build.yml
+    with:
+      publish: true
+    permissions:
+      contents: read
+      packages: write
