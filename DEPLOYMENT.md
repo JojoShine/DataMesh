@@ -34,7 +34,7 @@
 
 PostgreSQL17.11 数据位于项目专用 `platform_pg` 卷，实际卷名前缀来自固定 Compose 项目名；Docker 数据根在 `/data/docker`。不发布5432。`datamesh_bootstrap` 仅数据库初始化与维护使用；`datamesh_owner` 是非超级、不可建库/建角色的迁移身份；应用仅接收 `datamesh_app` 连接。创建角色的配置只在首次空数据目录执行，升级不重复初始化角色或删除数据卷。
 
-秘密文件按实际镜像 Unix 用户分配读取权限：PostgreSQL Alpine 的 postgres 用户并非 Debian 的999，须从精确镜像读取UID/GID；应用为10001:10001。公开内部证书可644，私钥与 bootstrap JSON 仅对应任务读取；Flink 和应用共享的令牌为受限组只读。初始化脚本应保持755，归档传输后检查权限。
+秘密文件按实际镜像 Unix 用户分配读取权限：PostgreSQL Alpine 的 postgres 用户并非 Debian 的999，须从精确镜像读取UID/GID；应用为10001:10001。公开内部证书可644，私钥与 bootstrap JSON 仅对应任务读取；Flink 与应用共享令牌应由应用用户10001持有、Flink实际主组9999读取，权限640。原生Flink入口降权会清除附加组，不能仅依赖Compose的group_add；应在实际Java身份下验证读取。初始化脚本应保持755，归档传输后检查权限。
 
 `CREDENTIAL_KEY`、水印历史密钥、来源凭据及已迁移对象的关联 ID 必须保留，否则旧加密内容与签名无法读取。现有环境升级不重新生成它们。应用长期运行不接收数据库管理、迁移或 bootstrap 管理员秘密。
 
